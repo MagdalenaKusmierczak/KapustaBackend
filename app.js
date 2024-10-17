@@ -29,7 +29,7 @@ app.use(cors());
 app.use(express.json());
 
 // Importuj router użytkowników
-const usersRouter = require("./routes/api/users");
+const usersRouter = require("./routes/api/auth");
 // Importuj router transakcji
 const transRouter = require("./routes/api/transactions");
 
