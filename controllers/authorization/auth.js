@@ -40,7 +40,7 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res, next) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -107,80 +107,153 @@ const login = async (req, res, next) => {
   }
 };
 
-// const logout = async (req, res) => {
-//   const { _id } = req.user;
-//   try {
-//     await User.findByIdAndUpdate(_id, { token: null });
-//     return res.json({
-//       status: "No Content",
-//       code: 204,
-//     });
-//   } catch (error) {
-//     res.json({
-//       code: 404,
-//       status: "Error",
-//       message: error.message,
-//     });
-//   }
-// };
+const logout = async (req, res) => {
+  const activeSession = req.session;
 
-// const current = async (req, res) => {
-//   try {
-//     const { id } = req.user;
-//     const user = await User.findById(id);
+  try {
+    await Session.deleteOne({ _id: activeSession._id });
+    return res.json({
+      code: 204,
+      status: "ok",
+      message: "	Successful operation",
+    });
+  } catch (error) {
+    res.json({
+      code: 404,
+      status: "Error",
+      message: "Invalid user / Invalid session",
+    });
+  }
+};
 
-//     return res.json({
-//       code: 200,
-//       status: "OK",
-//       email: user.email,
-//       subscription: user.subscription,
-//     });
-//   } catch (err) {
-//     res.json({
-//       status: "Error",
-//       body: {
-//         message: err.message,
-//       },
-//     });
-//   }
-// };
+const authorization = async (req, res, next) => {
+  const authHeader = req.get("Authorization");
 
-// const changeSubscription = async (req, res, next) => {
-//   const { subscription } = req.body;
-//   const { id } = req.user;
-//   if (Object.keys(req.body).length === 0) {
-//     next(
-//       res.json({
-//         code: 400,
-//         status: "missing required",
-//         message: "missing required field",
-//       })
-//     );
-//   }
-//   const result = await User.findByIdAndUpdate(
-//     id,
-//     { subscription },
-//     { new: true }
-//   );
-//   if (!result) {
-//     return res.json({
-//       code: 404,
-//       status: "Not found",
-//       message: "User not found",
-//     });
-//   }
+  if (authHeader) {
+    const accessToken = authHeader.replace("Bearer ", "");
+    let payload;
 
-//   return res.json({
-//     code: 200,
-//     status: "OK",
-//     subscription,
-//   });
-// };
+    try {
+      payload = payload = jwt.verify(
+        accessToken,
+        process.env.JWT_ACCESS_SECRET
+      );
+    } catch (error) {
+      res.json({
+        code: 401,
+        status: "Error",
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await User.findById(payload.uid);
+    const session = await Session.findById(payload.sid);
+
+    if (!user) {
+      return res.json({
+        code: 404,
+        status: "Error",
+        message: "Invalid user",
+      });
+    }
+    if (!session) {
+      return res.json({
+        code: 404,
+        status: "Error",
+        message: "Invalid session",
+      });
+    }
+    req.user = user;
+    req.session = session;
+    next();
+  } else
+    return res.json({
+      code: 400,
+      status: "Error",
+      message: "No token provided",
+    });
+};
+
+const refresh = async (req, res) => {
+  const authHeader = req.get("Authorization");
+
+  if (authHeader) {
+    const getSession = await Session.findById(req.body.sid);
+
+    if (!getSession) {
+      return res.json({
+        code: 404,
+        status: "Error",
+        message: "Invalid session",
+      });
+    }
+
+    const reqRefreshToken = authHeader.replace("Bearer ", "");
+    let payload;
+
+    try {
+      payload = jwt.verify(reqRefreshToken, process.env.JWT_REFRESH_SECRET);
+    } catch (error) {
+      await Session.findByIdAndDelete(req.body.sid);
+      return res.json({
+        code: 401,
+        status: "Error",
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await User.findById(payload.uid);
+    const session = await Session.findById(payload.sid);
+
+    if (!user) {
+      return res.json({
+        code: 404,
+        status: "Error",
+        message: "Invalid user",
+      });
+    }
+
+    if (!session) {
+      return res.json({
+        code: 404,
+        status: "Error",
+        message: "Invalid session",
+      });
+    }
+    await Session.findByIdAndDelete(payload.sid);
+
+    const setSession = await Session.create({
+      uid: user._id,
+    });
+
+    const newAccessToken = jwt.sign(
+      { uid: user._id, sid: setSession._id },
+      process.env.JWT_ACCESS_SECRET,
+      {
+        expiresIn: process.env.JWT_ACCESS_EXPIRE_TIME,
+      }
+    );
+
+    const newRefreshToken = jwt.sign(
+      { uid: user._id, sid: setSession._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRE_TIME }
+    );
+
+    return res.json({
+      code: 200,
+      status: "Success",
+      newAccessToken,
+      newRefreshToken,
+      newSid: setSession._id,
+    });
+  }
+};
 
 module.exports = {
   register,
   login,
-  //   logout,
-  //   current,
-  //   changeSubscription,
+  logout,
+  authorization,
+  refresh,
 };
