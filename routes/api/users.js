@@ -1,5 +1,5 @@
 const express = require("express");
-const authorization = require("../../controllers/authorization/auth");
+const {authorization} = require("../../controllers/authorization/auth");
 const { getUserData, updateBalance } = require("../../controllers/users/users");
 
 const usersRouter = express.Router();
