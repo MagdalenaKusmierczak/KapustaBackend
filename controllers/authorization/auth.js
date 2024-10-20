@@ -134,7 +134,7 @@ const authorization = async (req, res, next) => {
     let payload;
 
     try {
-      payload = payload = jwt.verify(
+      payload = jwt.verify(
         accessToken,
         process.env.JWT_ACCESS_SECRET
       );
