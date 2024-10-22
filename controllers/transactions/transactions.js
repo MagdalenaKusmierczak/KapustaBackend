@@ -97,13 +97,94 @@ const addExpense = async (req, res) => {
   });
 };
 
-const getExpense = async (req, res) => {};
+const getExpense = async (req, res) => {
+  const user = req.user;
+  let monthsStatistics = {};
+
+  const expenses = user.transactions.filter((transaction) => {
+    if (
+      transaction.category !== Categories.SALARY ||
+      transaction.category !== Categories.ADDITIONAL_INCOME
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  for (let i = 0; i <= 11; i++) {
+    let total = 0;
+    const monthName = months[i];
+
+    const transactions = expenses?.filter((transaction) => {
+      if (
+        Number(transaction.date.split("-")[1]) === i &&
+        Number(transaction.date.split("-")[0]) === new Date().getFullYear()
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    if (!transactions.length) {
+      monthsStatistics[monthName] = "N/A";
+      continue;
+    }
+    for (const transaction of transactions) {
+      total += transaction.amount;
+    }
+    monthsStatistics[monthName] = total;
+  }
+
+  return res.json({
+    status: "Successful operation",
+    code: 200,
+    incomes,
+    monthsStatistics,
+  });
+};
 
 const getExpenseCategorized = async (req, res) => {};
 
 const getTransactionsPeriodData = async (req, res) => {};
 
-const deleteTransaction = async (req, res) => {};
+const deleteTransaction = async (req, res) => {
+  const user = req.user;
+  const { transactionId } = req.params;
+  const transaction = user.transaction.find(
+    (transaction) => transaction._id?.toString() === transactionId
+  );
+
+  if (!transaction) {
+    return res.json({
+      code: 404,
+      status: "Not found",
+      message: "Transaction not found",
+    });
+  }
+
+  if (
+    transaction.category !== Categories.SALARY &&
+    transaction.category !== Categories.ADDITIONAL_INCOME
+  ) {
+    user.balance += transaction.amount;
+  } else {
+    user.balance -= transaction.amount;
+  }
+
+  await User.findOneAndUpdate(
+    { _id: req.user?._id },
+    {
+      $pull: { transactions: { _id: transactionId } },
+      $set: { balance: user.balance },
+    }
+  );
+
+  return res.json({
+    status: "Successful operation",
+    code: 200,
+    newBalance: user.balance,
+  });
+};
 
 module.exports = {
   addIncome,
@@ -116,108 +197,6 @@ module.exports = {
   deleteTransaction,
 };
 
-
-
-
-
-// router.get("/transaction/expense", async (req, res) => {
-
-//     const user = await User.findById(req.session.userId);
-
-//  
-
-//     const expenses = user.transactions.filter(
-//       (transaction) => transaction.amount < 0
-//     );
-
-//     const monthStats = generateMonthStats(user.transactions);
-
-//     res.json({
-//       incomes: expenses,
-//       monthStats: monthStats,
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
-
-// function generateMonthStats(transactions) {
-//   const monthStats = {};
-
-//   const polishMonths = {
-//     0: "Styczeń",
-//     1: "Luty",
-//     2: "Marzec",
-//     3: "Kwiecień",
-//     4: "Maj",
-//     5: "Czerwiec",
-//     6: "Lipiec",
-//     7: "Sierpień",
-//     8: "Wrzesień",
-//     9: "Październik",
-//     10: "Listopad",
-//     11: "Grudzień",
-//   };
-
-//   for (const month in polishMonths) {
-//     monthStats[polishMonths[month]] = "N/A";
-//   }
-
-//   transactions.forEach((transaction) => {
-//     const month = new Date(transaction.date).getMonth();
-//     if (monthStats[polishMonths[month]] === "N/A") {
-//       monthStats[polishMonths[month]] = Math.abs(transaction.amount);
-//     } else {
-//       monthStats[polishMonths[month]] += Math.abs(transaction.amount);
-//     }
-//   });
-
-//   return monthStats;
-// }
-
-// router.delete("/transaction", async (req, res) => {
-//   try {
-//     console.log("DELETE /transaction");
-//     if (!req.session.userId) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const { transactionId } = req.body;
-
-//     if (!transactionId) {
-//       return res.status(400).json({ error: "Transaction ID is required" });
-//     }
-//     const user = await User.findById(req.session.userId);
-
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const transactionToRemove = user.transactions.find(
-//       (transaction) => transaction._id.toString() === transactionId
-//     );
-
-//     if (!transactionToRemove) {
-//       return res.status(404).json({ error: "Transaction not found" });
-//     }
-
-//     user.transactions = user.transactions.filter(
-//       (transaction) => transaction._id.toString() !== transactionId
-//     );
-
-//     user.balance += transactionToRemove.amount;
-
-//     await user.save();
-
-//     res.json({
-//       newBalance: user.balance,
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
 
 // // Endpoint: GET /transaction/income-categories
 // router.get("/transaction/income-categories", async (req, res) => {
