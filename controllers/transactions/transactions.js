@@ -1,4 +1,5 @@
 const months = require("../../helpers/months");
+const categories = require("../../helpers/categories");
 const User = require("../../models/User");
 
 const addIncome = async (req, res) => {
@@ -71,7 +72,24 @@ const getIncome = async (req, res) => {
   });
 };
 
-const getIncomeCategorized = async (req, res) => {};
+const getIncomeCategories = async (req, res) => {
+  const incomeCategories = [];
+
+  for (const category of Object.values(categories)) {
+    if (
+      category === Categories.SALARY ||
+      category === Categories.ADDITIONAL_INCOME
+    ) {
+      incomeCategories.push(category);
+    }
+  }
+
+  res.json({
+    status: "Successful operation",
+    code: 200,
+    incomeCategories,
+  });
+};
 
 const addExpense = async (req, res) => {
   const user = req.user;
@@ -143,7 +161,23 @@ const getExpense = async (req, res) => {
   });
 };
 
-const getExpenseCategorized = async (req, res) => {};
+const getExpenseCategories = async (req, res) => {
+  const expenseCategories = [];
+  for (const category of Object.values(categories)) {
+    if (
+      category !== Categories.SALARY &&
+      category !== Categories.ADDITIONAL_INCOME
+    ) {
+      expenseCategories.push(category);
+    }
+  }
+
+  res.json({
+    status: "Successful operation",
+    code: 200,
+    expenseCategories,
+  });
+};
 
 const getTransactionsPeriodData = async (req, res) => {};
 
@@ -189,62 +223,14 @@ const deleteTransaction = async (req, res) => {
 module.exports = {
   addIncome,
   getIncome,
-  getIncomeCategorized,
+  getIncomeCategories,
   addExpense,
   getExpense,
-  getExpenseCategorized,
+  getExpenseCategories,
   getTransactionsPeriodData,
   deleteTransaction,
 };
 
-
-// // Endpoint: GET /transaction/income-categories
-// router.get("/transaction/income-categories", async (req, res) => {
-//   try {
-//     if (!req.session.userId) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const user = await User.findById(req.session.userId);
-
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const categories = user.transactions.map(
-//       (transaction) => transaction.category
-//     );
-
-//     const uniqueCategories = [...new Set(categories)];
-
-//     res.json(uniqueCategories);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
-
-// router.get("/transaction/expense-categories", async (req, res) => {
-//   try {
-//     const expenseCategories = [
-//       "Produkty",
-//       "Alkohol",
-//       "Rozrywka",
-//       "Zdrowie",
-//       "Transport",
-//       "Wszystko dla domu",
-//       "Technika",
-//       "Komunikacja i media",
-//       "Sport i hobby",
-//       "Edukacja",
-//       "Inne",
-//     ];
-//     res.json(expenseCategories);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
 
 // router.get("/transaction/period-data", async (req, res) => {
 //   try {

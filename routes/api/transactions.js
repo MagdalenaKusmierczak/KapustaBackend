@@ -3,10 +3,10 @@ const { authorization } = require("../../controllers/authorization/auth");
 const {
   addIncome,
   getIncome,
-  getIncomeCategorized,
+  getIncomeCategories,
   addExpense,
   getExpense,
-  getExpenseCategorized,
+  getExpenseCategories,
   getTransactionsPeriodData,
   deleteTransaction,
 } = require("../../controllers/transactions/transactions");
@@ -18,14 +18,14 @@ transactionsRouter.get("/income"), authorization, getIncome;
 transactionsRouter.get(
   "/income-categories",
   authorization,
-  getIncomeCategorized
+  getIncomeCategories,
 );
 transactionsRouter.post("/expense", authorization, addExpense);
 transactionsRouter.get("/expense", authorization, getExpense);
 transactionsRouter.get(
   "/expense-categories",
   authorization,
-  getExpenseCategorized
+  getExpenseCategories,
 );
 transactionsRouter.get(
   "/period-data",
