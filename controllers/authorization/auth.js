@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 const Session = require("../../models/Session");
 
 const register = async (req, res) => {
+  console.log(req.body);
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -32,7 +33,7 @@ const register = async (req, res) => {
       id: newUser._id,
     });
   } catch (error) {
-    res.json({
+    return res.json({
       code: 400,
       status: "Error",
       message: "Bad request (invalid request body)",
@@ -74,13 +75,13 @@ const login = async (req, res) => {
     const setSession = await Session.create({ uid: user._id });
 
     const accessToken = jwt.sign(
-      { uid: user._id, sid: newSession._id },
+      { uid: user._id, sid: setSession._id },
       process.env.JWT_ACCESS_SECRET,
       { expiresIn: process.env.JWT_ACCESS_EXPIRE_TIME }
     );
 
     const refreshToken = jwt.sign(
-      { uid: user._id, sid: newSession._id },
+      { uid: user._id, sid: setSession._id },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: process.env.JWT_REFRESH_EXPIRE_TIME }
     );
@@ -99,7 +100,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.json({
+    return res.json({
       code: 404,
       status: "Error",
       message: error.message,
@@ -118,7 +119,7 @@ const logout = async (req, res) => {
       message: "	Successful operation",
     });
   } catch (error) {
-    res.json({
+    return res.json({
       code: 404,
       status: "Error",
       message: "Invalid user / Invalid session",
@@ -134,12 +135,9 @@ const authorization = async (req, res, next) => {
     let payload;
 
     try {
-      payload = jwt.verify(
-        accessToken,
-        process.env.JWT_ACCESS_SECRET
-      );
+      payload = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
     } catch (error) {
-      res.json({
+      return res.json({
         code: 401,
         status: "Error",
         message: "Unauthorized",
