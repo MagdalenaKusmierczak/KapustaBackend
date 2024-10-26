@@ -6,11 +6,11 @@ require("dotenv").config();
 
 const authRouter = require("./routes/api/auth");
 const transactionsRouter = require("./routes/api/transactions");
-const usersRouter = require("./routes/users");
+const usersRouter = require("./routes/api/users");
 
 const app = express();
 
-const formatsLogger = app.get("env") === "development" ? "dev" : "short";
+const formatsLogger = app.get(".env") === "development" ? "dev" : "short";
 
 app.use(logger(formatsLogger));
 app.use(cors());
