@@ -3,9 +3,9 @@ const app = require("./app");
 
 require("dotenv").config();
 
-const PORT = process.env.PORT || 10000;
-const URI_DATABASE = process.env.URI_DATABASE;
-const connection = mongoose.connect(URI_DATABASE);
+const PORT = process.env.PORT || 3000;
+const { URI_DATABASE: urlDb } = process.env;
+const connection = mongoose.connect(urlDb);
 
 const server = async () => {
   try {
