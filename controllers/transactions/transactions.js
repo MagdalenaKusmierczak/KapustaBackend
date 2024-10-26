@@ -179,7 +179,59 @@ const getExpenseCategories = async (req, res) => {
   });
 };
 
-const getTransactionsPeriodData = async (req, res) => {};
+const getTransactionsPeriodData = async (req, res) => {
+  const user = req.user;
+  const transactions = user.transactions;
+  const { date } = req.query;
+
+  const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+  if (!date || !dateRegex.test(date)) {
+    return res.json({
+      status: error,
+      code: 400,
+      message: "Invalid date format. Please use YYYY-MM.",
+    });
+  }
+
+  const [year, month] = date.split("-").map(Number);
+
+  let incomesData = {};
+  let incomesSum = 0;
+  let expensesData = {};
+  let expensesSum = 0;
+
+  transactions.forEach((transaction) => {
+    const transactionDate = new Date(transaction.date);
+    const transactionMonth = transactionDate.getMonth() + 1; 
+    const transactionYear = transactionDate.getFullYear();
+
+    if (transactionMonth === month && transactionYear === year) {
+      if (transaction.amount >= 0) {
+        incomesData[transaction.category] =
+          (incomesData[transaction.category] || 0) + transaction.amount;
+        incomesSum += transaction.amount;
+      } else {
+        expensesData[transaction.category] =
+          (expensesData[transaction.category] || 0) +
+          Math.abs(transaction.amount);
+        expensesSum += Math.abs(transaction.amount);
+      }
+    }
+  });
+
+  return res.json({
+    status: "Successful operation",
+    code: 200,
+    incomes: {
+      total: incomesSum,
+      incomesData,
+    },
+    expenses: {
+      total: expensesSum,
+      expensesData,
+    },
+  });
+};
 
 const deleteTransaction = async (req, res) => {
   const user = req.user;
@@ -230,82 +282,3 @@ module.exports = {
   getTransactionsPeriodData,
   deleteTransaction,
 };
-
-
-// router.get("/transaction/period-data", async (req, res) => {
-//   try {
-//     const { date } = req.query;
-//     if (!date) {
-//       return res.status(400).json({ error: "Date parameter is required" });
-//     }
-
-//     const startDate = new Date(`${date}-01`);
-//     const endDate = new Date(startDate);
-//     endDate.setMonth(endDate.getMonth() + 1);
-
-//     const user = await User.findById(req.session.userId);
-
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const transactionsInPeriod = user.transactions.filter(
-//       (transaction) =>
-//         new Date(transaction.date) >= startDate &&
-//         new Date(transaction.date) < endDate
-//     );
-
-//     const incomes = transactionsInPeriod.filter(
-//       (transaction) => transaction.amount > 0
-//     );
-//     const expenses = transactionsInPeriod.filter(
-//       (transaction) => transaction.amount < 0
-//     );
-
-//     const incomesData = {};
-//     const expensesData = {};
-
-//     incomes.forEach((income) => {
-//       const category = income.category;
-//       if (!incomesData[category]) {
-//         incomesData[category] = { total: 0 };
-//       }
-//       incomesData[category].total += income.amount;
-//       if (!incomesData[category][income.description]) {
-//         incomesData[category][income.description] = 0;
-//       }
-//       incomesData[category][income.description] += income.amount;
-//     });
-
-//     expenses.forEach((expense) => {
-//       const category = expense.category;
-//       if (!expensesData[category]) {
-//         expensesData[category] = { total: 0 };
-//       }
-//       expensesData[category].total += Math.abs(expense.amount);
-//       if (!expensesData[category][expense.description]) {
-//         expensesData[category][expense.description] = 0;
-//       }
-//       expensesData[category][expense.description] += Math.abs(expense.amount);
-//     });
-
-//     const response = {
-//       incomes: {
-//         total: incomes.reduce((sum, income) => sum + income.amount, 0),
-//         incomesData: incomesData,
-//       },
-//       expenses: {
-//         total: expenses.reduce(
-//           (sum, expense) => sum + Math.abs(expense.amount),
-//           0
-//         ),
-//         expensesData: expensesData,
-//       },
-//     };
-
-//     res.json(response);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server Error");
-//   }
-// });
