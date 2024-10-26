@@ -13,3 +13,5 @@ authRouter.post("/register", register);
 authRouter.post("/login", login);
 authRouter.post("/logout", authorization, logout);
 authRouter.post("/refresh", refresh);
+
+module.exports = authRouter;
