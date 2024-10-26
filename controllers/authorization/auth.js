@@ -116,7 +116,7 @@ const logout = async (req, res) => {
     return res.json({
       code: 204,
       status: "ok",
-      message: "	Successful operation",
+      message: "Successful operation",
     });
   } catch (error) {
     return res.json({
