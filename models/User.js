@@ -14,8 +14,8 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  transactions: [{ type: moongose.Schema.ObjectId, ref: "Transaction" }],
-  session: { type: moongose.Schema.ObjectId, ref: "Session" },
+  transactions: [{ type: mongoose.Schema.ObjectId, ref: "Transaction" }],
+  session: { type: mongoose.Schema.ObjectId, ref: "Session" },
 });
 
 module.exports = mongoose.model("User", userSchema);
