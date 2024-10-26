@@ -18,7 +18,7 @@ const addIncome = async (req, res) => {
 
   await user.save();
 
-  res.json({
+  return res.json({
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,
@@ -84,7 +84,7 @@ const getIncomeCategories = async (req, res) => {
     }
   }
 
-  res.json({
+  return res.json({
     status: "Successful operation",
     code: 200,
     incomeCategories,
@@ -107,7 +107,7 @@ const addExpense = async (req, res) => {
 
   await user.save();
 
-  res.json({
+ return res.json({
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,
@@ -172,7 +172,7 @@ const getExpenseCategories = async (req, res) => {
     }
   }
 
-  res.json({
+  return res.json({
     status: "Successful operation",
     code: 200,
     expenseCategories,
