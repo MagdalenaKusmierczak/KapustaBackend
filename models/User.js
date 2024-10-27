@@ -15,7 +15,6 @@ const userSchema = new mongoose.Schema({
     default: 0,
   },
   transactions: [{ type: mongoose.Schema.ObjectId, ref: "Transaction" }],
-  session: { type: mongoose.Schema.ObjectId, ref: "Session" },
 });
 
 module.exports = mongoose.model("User", userSchema);

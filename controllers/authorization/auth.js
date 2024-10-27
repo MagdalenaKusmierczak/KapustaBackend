@@ -3,8 +3,9 @@ const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 const Session = require("../../models/Session");
 
+require("dotenv").config();
+
 const register = async (req, res) => {
-  console.log(req.body);
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -17,7 +18,7 @@ const register = async (req, res) => {
       });
     }
 
-    const hashPassword = await bcrypt.hash(password, process.env.HASH);
+    const hashPassword = await bcrypt.hash(password, Number(process.env.HASH));
 
     const newUser = await User.create({
       email,

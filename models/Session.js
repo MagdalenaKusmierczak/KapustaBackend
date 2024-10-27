@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const sessionSchema = new mongoose.Schema({
-  uid: { type: String },
+  uid: { type: ObjectId },
 });
 
 module.exports = mongoose.model("Session", sessionSchema);
