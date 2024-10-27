@@ -14,7 +14,22 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  transactions: [{ type: mongoose.Schema.ObjectId, ref: "Transaction" }],
+  transactions: [
+    {
+      description: {
+        type: String,
+      },
+      category: {
+        type: String,
+      },
+      amount: {
+        type: Number,
+      },
+      date: {
+        type: String,
+      },
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", userSchema);
