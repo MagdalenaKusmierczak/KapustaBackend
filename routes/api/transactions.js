@@ -14,7 +14,7 @@ const {
 const transactionsRouter = express.Router();
 
 transactionsRouter.post("/income", authorization, addIncome);
-transactionsRouter.get("/income"), authorization, getIncome;
+transactionsRouter.get("/income", authorization, getIncome);
 transactionsRouter.get(
   "/income-categories",
   authorization,
