@@ -53,6 +53,7 @@ const getIncome = async (req, res) => {
       monthsStatistics[monthName] = "N/A";
       continue;
     }
+
     for (const transaction of transactions) {
       total += transaction.amount;
     }
@@ -126,19 +127,17 @@ const getExpense = async (req, res) => {
     const monthName = months[i];
 
     const transactions = expenses.filter((transaction) => {
-      if (
+      return (
         Number(transaction.date.split("-")[1]) === i + 1 &&
         Number(transaction.date.split("-")[0]) === new Date().getFullYear()
-      ) {
-        return true;
-      }
-      return false;
+      );
     });
 
     if (!transactions.length) {
       monthsStatistics[monthName] = "N/A";
       continue;
     }
+
     for (const transaction of transactions) {
       total += transaction.amount;
     }
