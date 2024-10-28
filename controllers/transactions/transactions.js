@@ -178,7 +178,7 @@ const getTransactionsPeriodData = async (req, res) => {
   const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
   if (!date || !dateRegex.test(date)) {
     return res.json({
-      status: error,
+      status: "Error",
       code: 400,
       message: "Invalid date format. Please use YYYY-MM.",
     });
