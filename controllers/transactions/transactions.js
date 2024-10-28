@@ -1,5 +1,5 @@
 const months = require("../../helpers/months");
-const categories = require("../../helpers/categories");
+const Categories = require("../../helpers/categories");
 const User = require("../../models/User");
 
 const addIncome = async (req, res) => {
@@ -28,30 +28,25 @@ const addIncome = async (req, res) => {
 
 const getIncome = async (req, res) => {
   const user = req.user;
+
   let monthsStatistics = {};
 
   const incomes = user.transactions.filter((transaction) => {
-    if (
+    return (
       transaction.category === Categories.SALARY ||
       transaction.category === Categories.ADDITIONAL_INCOME
-    ) {
-      return true;
-    }
-    return false;
+    );
   });
 
-  for (let i = 0; i <= 11; i++) {
+  for (let i = 0; i < 12; i++) {
     let total = 0;
     const monthName = months[i];
 
-    const transactions = incomes?.filter((transaction) => {
-      if (
-        Number(transaction.date.split("-")[1]) === i &&
+    const transactions = incomes.filter((transaction) => {
+      return (
+        Number(transaction.date.split("-")[1]) === i + 1 &&
         Number(transaction.date.split("-")[0]) === new Date().getFullYear()
-      ) {
-        return true;
-      }
-      return false;
+      );
     });
 
     if (!transactions.length) {
@@ -107,7 +102,7 @@ const addExpense = async (req, res) => {
 
   await user.save();
 
- return res.json({
+  return res.json({
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,
@@ -120,22 +115,19 @@ const getExpense = async (req, res) => {
   let monthsStatistics = {};
 
   const expenses = user.transactions.filter((transaction) => {
-    if (
-      transaction.category !== Categories.SALARY ||
+    return (
+      transaction.category !== Categories.SALARY &&
       transaction.category !== Categories.ADDITIONAL_INCOME
-    ) {
-      return true;
-    }
-    return false;
+    );
   });
 
-  for (let i = 0; i <= 11; i++) {
+  for (let i = 0; i < 12; i++) {
     let total = 0;
     const monthName = months[i];
 
-    const transactions = expenses?.filter((transaction) => {
+    const transactions = expenses.filter((transaction) => {
       if (
-        Number(transaction.date.split("-")[1]) === i &&
+        Number(transaction.date.split("-")[1]) === i + 1 &&
         Number(transaction.date.split("-")[0]) === new Date().getFullYear()
       ) {
         return true;
@@ -156,7 +148,7 @@ const getExpense = async (req, res) => {
   return res.json({
     status: "Successful operation",
     code: 200,
-    incomes,
+    expenses,
     monthsStatistics,
   });
 };
@@ -202,7 +194,7 @@ const getTransactionsPeriodData = async (req, res) => {
 
   transactions.forEach((transaction) => {
     const transactionDate = new Date(transaction.date);
-    const transactionMonth = transactionDate.getMonth() + 1; 
+    const transactionMonth = transactionDate.getMonth() + 1;
     const transactionYear = transactionDate.getFullYear();
 
     if (transactionMonth === month && transactionYear === year) {
