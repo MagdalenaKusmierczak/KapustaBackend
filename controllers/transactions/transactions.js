@@ -71,7 +71,7 @@ const getIncome = async (req, res) => {
 const getIncomeCategories = async (req, res) => {
   const incomeCategories = [];
 
-  for (const category of Object.values(categories)) {
+  for (const category of Object.values(Categories)) {
     if (
       category === Categories.SALARY ||
       category === Categories.ADDITIONAL_INCOME
@@ -154,7 +154,7 @@ const getExpense = async (req, res) => {
 
 const getExpenseCategories = async (req, res) => {
   const expenseCategories = [];
-  for (const category of Object.values(categories)) {
+  for (const category of Object.values(Categories)) {
     if (
       category !== Categories.SALARY &&
       category !== Categories.ADDITIONAL_INCOME
