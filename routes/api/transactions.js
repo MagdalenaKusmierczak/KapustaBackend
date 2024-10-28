@@ -32,6 +32,6 @@ transactionsRouter.get(
   authorization,
   getTransactionsPeriodData
 );
-transactionsRouter.delete("/", authorization, deleteTransaction);
+transactionsRouter.delete("/:transactionId", authorization, deleteTransaction);
 
 module.exports = transactionsRouter;

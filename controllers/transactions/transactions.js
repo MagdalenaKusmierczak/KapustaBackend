@@ -227,8 +227,8 @@ const getTransactionsPeriodData = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   const user = req.user;
   const { transactionId } = req.params;
-  const transaction = user.transaction.find(
-    (transaction) => transaction._id?.toString() === transactionId
+  const transaction = user.transactions.find(
+    (transaction) => transaction._id.toString() === transactionId
   );
 
   if (!transaction) {
@@ -249,7 +249,7 @@ const deleteTransaction = async (req, res) => {
   }
 
   await User.findOneAndUpdate(
-    { _id: req.user?._id },
+    { _id: req.user._id },
     {
       $pull: { transactions: { _id: transactionId } },
       $set: { balance: user.balance },
