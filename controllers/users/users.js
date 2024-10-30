@@ -1,6 +1,6 @@
 const getUserData = async (req, res) => {
   const user = req.user;
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     email: user?.email,
@@ -14,7 +14,7 @@ const updateBalance = async (req, res) => {
   const { newBalance } = req.body;
   user.balance = newBalance;
   await user?.save();
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     newBalance,

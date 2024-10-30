@@ -18,7 +18,7 @@ const addIncome = async (req, res) => {
 
   await user.save();
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,
@@ -60,7 +60,7 @@ const getIncome = async (req, res) => {
     monthsStatistics[monthName] = total;
   }
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     incomes,
@@ -80,7 +80,7 @@ const getIncomeCategories = async (req, res) => {
     }
   }
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     incomeCategories,
@@ -103,7 +103,7 @@ const addExpense = async (req, res) => {
 
   await user.save();
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,
@@ -144,7 +144,7 @@ const getExpense = async (req, res) => {
     monthsStatistics[monthName] = total;
   }
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     expenses,
@@ -163,7 +163,7 @@ const getExpenseCategories = async (req, res) => {
     }
   }
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     expenseCategories,
@@ -177,7 +177,7 @@ const getTransactionsPeriodData = async (req, res) => {
 
   const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
   if (!date || !dateRegex.test(date)) {
-    return res.json({
+    return res.status(400).json({
       status: "Error",
       code: 400,
       message: "Invalid date format. Please use YYYY-MM.",
@@ -210,7 +210,7 @@ const getTransactionsPeriodData = async (req, res) => {
     }
   });
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     incomes: {
@@ -232,7 +232,7 @@ const deleteTransaction = async (req, res) => {
   );
 
   if (!transaction) {
-    return res.json({
+    return res.status(404).json({
       code: 404,
       status: "Not found",
       message: "Transaction not found",
@@ -256,7 +256,7 @@ const deleteTransaction = async (req, res) => {
     }
   );
 
-  return res.json({
+  return res.status(200).json({
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,

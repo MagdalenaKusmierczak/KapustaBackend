@@ -11,7 +11,7 @@ const register = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user) {
-      return res.json({
+      return res.status(409).json({
         status: "Conflict",
         code: 409,
         message: "Provided email already exists",
@@ -27,14 +27,14 @@ const register = async (req, res) => {
       transactions: [],
     });
 
-    return res.json({
+    return res.status(201).json({
       status: "Successful operation",
       code: 201,
       email: newUser.email,
       id: newUser._id,
     });
   } catch (error) {
-    return res.json({
+    return res.status(400).json({
       code: 400,
       status: "Error",
       message: "Bad request (invalid request body)",
@@ -56,7 +56,7 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.json({
+      return res.status(403).json({
         status: "Unauthorized",
         code: 403,
         message: "Email doesn't exist",
@@ -66,7 +66,7 @@ const login = async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-      return res.json({
+      return res.status(403).json({
         status: "Unauthorized",
         code: 403,
         message: "Email or password is wrong",
@@ -87,7 +87,7 @@ const login = async (req, res) => {
       { expiresIn: process.env.JWT_REFRESH_EXPIRE_TIME }
     );
 
-    return res.json({
+    return res.status(200).json({
       status: "OK",
       code: 200,
       accessToken,
@@ -101,7 +101,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.json({
+    return res.status(404).json({
       code: 404,
       status: "Error",
       message: error.message,
@@ -114,13 +114,13 @@ const logout = async (req, res) => {
 
   try {
     await Session.deleteOne({ _id: activeSession._id });
-    return res.json({
+    return res.status(204).json({
       code: 204,
       status: "ok",
       message: "Successful operation",
     });
   } catch (error) {
-    return res.json({
+    return res.status(404).json({
       code: 404,
       status: "Error",
       message: "Invalid user / Invalid session",
@@ -138,7 +138,7 @@ const authorization = async (req, res, next) => {
     try {
       payload = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET);
     } catch (error) {
-      return res.json({
+      return res.status(401).json({
         code: 401,
         status: "Error",
         message: "Unauthorized",
@@ -149,14 +149,14 @@ const authorization = async (req, res, next) => {
     const session = await Session.findById(payload.sid);
 
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         code: 404,
         status: "Error",
         message: "Invalid user",
       });
     }
     if (!session) {
-      return res.json({
+      return res.status(404).json({
         code: 404,
         status: "Error",
         message: "Invalid session",
@@ -166,7 +166,7 @@ const authorization = async (req, res, next) => {
     req.session = session;
     next();
   } else
-    return res.json({
+    return res.status(400).json({
       code: 400,
       status: "Error",
       message: "No token provided",
@@ -180,7 +180,7 @@ const refresh = async (req, res) => {
     const getSession = await Session.findById(req.body.sid);
 
     if (!getSession) {
-      return res.json({
+      return res.status(404).json({
         code: 404,
         status: "Error",
         message: "Invalid session",
@@ -194,7 +194,7 @@ const refresh = async (req, res) => {
       payload = jwt.verify(reqRefreshToken, process.env.JWT_REFRESH_SECRET);
     } catch (error) {
       await Session.findByIdAndDelete(req.body.sid);
-      return res.json({
+      return res.status(401).json({
         code: 401,
         status: "Error",
         message: "Unauthorized",
@@ -205,7 +205,7 @@ const refresh = async (req, res) => {
     const session = await Session.findById(payload.sid);
 
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         code: 404,
         status: "Error",
         message: "Invalid user",
@@ -213,7 +213,7 @@ const refresh = async (req, res) => {
     }
 
     if (!session) {
-      return res.json({
+      return res.status(404).json({
         code: 404,
         status: "Error",
         message: "Invalid session",
@@ -239,7 +239,7 @@ const refresh = async (req, res) => {
       { expiresIn: process.env.JWT_REFRESH_EXPIRE_TIME }
     );
 
-    return res.json({
+    return res.status(200).json({
       code: 200,
       status: "Success",
       newAccessToken,
