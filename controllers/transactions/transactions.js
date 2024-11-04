@@ -197,7 +197,10 @@ const getTransactionsPeriodData = async (req, res) => {
     const transactionYear = transactionDate.getFullYear();
 
     if (transactionMonth === month && transactionYear === year) {
-      if (transaction.amount >= 0) {
+      if (
+        transaction.category === Categories.SALARY ||
+        transaction.category === Categories.ADDITIONAL_INCOME
+      ) {
         incomesData[transaction.category] =
           (incomesData[transaction.category] || 0) + transaction.amount;
         incomesSum += transaction.amount;
