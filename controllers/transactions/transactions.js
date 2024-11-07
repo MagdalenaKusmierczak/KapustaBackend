@@ -197,18 +197,48 @@ const getTransactionsPeriodData = async (req, res) => {
     const transactionYear = transactionDate.getFullYear();
 
     if (transactionMonth === month && transactionYear === year) {
+      const category = transaction.category;
+      const description = transaction.description;
+
       if (
-        transaction.category === Categories.SALARY ||
-        transaction.category === Categories.ADDITIONAL_INCOME
+        category === Categories.SALARY ||
+        category === Categories.ADDITIONAL_INCOME
       ) {
-        incomesData[transaction.category] =
-          (incomesData[transaction.category] || 0) + transaction.amount;
-        incomesSum += transaction.amount;
+        if (!incomesData[category]) {
+          incomesData[category] = {
+            total: transaction.amount,
+            [description]: transaction.amount,
+          };
+          incomesSum += transaction.amount;
+        } else {
+          if (!incomesData[category][description]) {
+            incomesData[category].total += transaction.amount;
+            incomesData[category][description] = transaction.amount;
+            incomesSum += transaction.amount;
+          } else {
+            incomesData[category].total += transaction.amount;
+            incomesData[category][description] += transaction.amount;
+            incomesSum += transaction.amount;
+          }
+        }
       } else {
-        expensesData[transaction.category] =
-          (expensesData[transaction.category] || 0) +
-          Math.abs(transaction.amount);
-        expensesSum += Math.abs(transaction.amount);
+        if (!expensesData[category]) {
+          expensesData[category] = {
+            total: Math.abs(transaction.amount),
+            [description]: Math.abs(transaction.amount),
+          };
+          expensesSum += Math.abs(transaction.amount);
+        } else {
+          if (!expensesData[category][description]) {
+            expensesData[category].total += Math.abs(transaction.amount);
+            expensesData[category][description] = Math.abs(transaction.amount);
+            expensesSum += Math.abs(transaction.amount);
+          } else {
+            expensesData[category].total += Math.abs(transaction.amount);
+            expensesData[category][description] += Math.abs(transaction.amount);
+            expensesSum += Math.abs(transaction.amount);
+          }
+        }
       }
     }
   });
