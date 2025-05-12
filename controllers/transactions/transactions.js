@@ -12,6 +12,10 @@ const addIncome = async (req, res) => {
     category,
   };
 
+  // What about a negative amount? Should it be allowed?
+  // If so, it might be better to check for a negative amount here or in the model validator
+  // Also, we should check for a valid date format and existence of the category
+
   user.transactions.push(transaction);
 
   user.balance += amount;
@@ -19,6 +23,7 @@ const addIncome = async (req, res) => {
   await user.save();
 
   return res.status(200).json({
+    // Usually for 200 you don't have to provide any message
     status: "Successful operation",
     code: 200,
     newBalance: user.balance,
@@ -40,6 +45,9 @@ const getIncome = async (req, res) => {
 
   for (let i = 0; i < 12; i++) {
     let total = 0;
+
+    // Do we really need month names in the back-end? Maybe we can just use indexes and translate indexes to month names in the UI?
+    // Always think how your decisions will affect internationalization
     const monthName = months[i];
 
     const transactions = incomes.filter((transaction) => {
@@ -71,7 +79,17 @@ const getIncome = async (req, res) => {
 const getIncomeCategories = async (req, res) => {
   const incomeCategories = [];
 
+  // Here as well - we should operate on solid ENUM values, not on translatable strings - maybe we can have
+  /**
+   * const categories = {
+   *   PRODUCTS = 'PRODUCTS',
+   *   ...
+   * }
+   *
+   */
   for (const category of Object.values(Categories)) {
+    // This operation is repeated across the file - maybe we can create a helper function for it?
+    // Also, maybe it's worth to split categories into two separate ENUMs - one for incomes and one for expenses?
     if (
       category === Categories.SALARY ||
       category === Categories.ADDITIONAL_INCOME
@@ -96,6 +114,8 @@ const addExpense = async (req, res) => {
     date,
     category,
   };
+
+  // Here the same - think about validations of the input data
 
   user.transactions.push(transaction);
 
@@ -216,8 +236,11 @@ const getTransactionsPeriodData = async (req, res) => {
             incomesData[category][description] = transaction.amount;
             incomesSum += transaction.amount;
           } else {
+            // This part can be moved outside as well. You can then perform specific operation ons the object
             incomesData[category].total += transaction.amount;
             incomesData[category][description] += transaction.amount;
+
+            // this can be probably moved outside of the if statement - it's repeated many times
             incomesSum += transaction.amount;
           }
         }
@@ -229,6 +252,7 @@ const getTransactionsPeriodData = async (req, res) => {
           };
           expensesSum += Math.abs(transaction.amount);
         } else {
+          // Instead of using if/else here (and above), you can use null coalescing (??) operator along optional chaining (?.) - should simplify these blocks
           if (!expensesData[category][description]) {
             expensesData[category].total += Math.abs(transaction.amount);
             expensesData[category][description] = Math.abs(transaction.amount);
@@ -236,6 +260,8 @@ const getTransactionsPeriodData = async (req, res) => {
           } else {
             expensesData[category].total += Math.abs(transaction.amount);
             expensesData[category][description] += Math.abs(transaction.amount);
+
+            // The same here - this is repeated in every "if"
             expensesSum += Math.abs(transaction.amount);
           }
         }

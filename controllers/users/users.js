@@ -9,6 +9,8 @@ const getUserData = async (req, res) => {
   });
 };
 
+// Shouldn't the balance be related directly to all the transactions in the account for a given user?
+// By updating balance in a separate call, we allow for the possibility of inconsistency
 const updateBalance = async (req, res) => {
   const user = req.user;
   const { newBalance } = req.body;
