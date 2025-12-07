@@ -13,10 +13,15 @@ const register = async (req, res) => {
     if (user) {
       return res.status(409).json({
         status: "Conflict",
+        // Really good that you're using proper error codes!
         code: 409,
         message: "Provided email already exists",
       });
     }
+
+    // You should also validate the requirements for both the password and the email here
+    // You can use opinionated "email regex" (just search for it) and password requirements (like length, special characters, etc.)
+    // What if someone e.g. does not provide a password or an email?
 
     const hashPassword = await bcrypt.hash(password, Number(process.env.HASH));
 
@@ -56,6 +61,9 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      // Usually you don't want to specify if the email doesn't exist or the password is wrong separately
+      // This is a security measure to prevent brute-force attacks - you just return an error message that's the same
+      // whether the email doesn't exist, or the password is wrong
       return res.status(403).json({
         status: "Unauthorized",
         code: 403,
@@ -75,6 +83,7 @@ const login = async (req, res) => {
 
     const setSession = await Session.create({ uid: user._id });
 
+    // Nice to use JWT for authentication!
     const accessToken = jwt.sign(
       { uid: user._id, sid: setSession._id },
       process.env.JWT_ACCESS_SECRET,
@@ -101,6 +110,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
+    // Is 404 a good response here?
     return res.status(404).json({
       code: 404,
       status: "Error",
@@ -120,6 +130,7 @@ const logout = async (req, res) => {
       message: "Successful operation",
     });
   } catch (error) {
+    // Is 404 a good response here?
     return res.status(404).json({
       code: 404,
       status: "Error",
@@ -176,6 +187,7 @@ const authorization = async (req, res, next) => {
 const refresh = async (req, res) => {
   const authHeader = req.get("Authorization");
 
+  // What about a bit better error handling here? I think you didn't handle the case when something goes wrong in general
   if (authHeader) {
     const getSession = await Session.findById(req.body.sid);
 

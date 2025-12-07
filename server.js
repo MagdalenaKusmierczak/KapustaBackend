@@ -20,4 +20,6 @@ const server = async () => {
   }
 };
 
+// You can use IIFE for that, e.g.
+// (async () => {})();
 server();
